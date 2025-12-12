@@ -9,31 +9,33 @@ public class MainApp {
 
     public static void main(String[] args) {
         
-        SwingUtilities.invokeLater(() -> createAndShowGUI());
+        SwingUtilities.invokeLater(() -> createAndShowGUI()); // GUI'yi oluştur
     }
 
     private static void createAndShowGUI() {
         // 1. Veri Nesnesini Oluştur
-        Person person = new Person();
-        Product product=new Product();
-        
-      
-        ObjectPropertyTable table = new ObjectPropertyTable(person);
-        ObjectPropertyTable table1=new ObjectPropertyTable(product);
-        
-      
 
-        // Pencereyi oluştur
-        JFrame frame = new JFrame("sNesne Özellik Editörü");
+        Person person = new Person(); // Person nesnesi yorum satırında
+        //Product product = new Product(); // Product nesnesi aktif
         
-        JScrollPane scrollPane = new JScrollPane(table);
+        // Tabloyu oluştur (Şu an Product nesnesi ile)
+        //ObjectPropertyTable table = new ObjectPropertyTable(product);
+         ObjectPropertyTable table1 = new ObjectPropertyTable(person); 
+        
+        // Pencereyi oluştur
+        JFrame frame = new JFrame("Nesne Özellik Editörü");
+        
+        JScrollPane scrollPane = new JScrollPane(table1);
         scrollPane.setPreferredSize(new Dimension(450, 250)); 
         
         // Değişiklikleri görmek için bir kontrol paneli ekledim
         JButton printButton = new JButton("Nesneyi Konsola Yazdır");
         printButton.addActionListener((ActionEvent e) -> {
-            // Getter metotları
-            System.out.println("\n--- GÜNCEL NESNE DEĞERLERİ ---");
+            // Getter metotları - 
+            
+            // Eğer Person sınıfını kullanmak isterseniz bu bloğu kullanın:
+            
+            System.out.println("\n--- GÜNCEL PERSON NESNESİ DEĞERLERİ ---");
             System.out.println("İsim: " + person.getIsim());
             System.out.println("Soyad: " + person.getSoyad());
             System.out.println("Yaş: " + person.getYas());
@@ -41,6 +43,18 @@ public class MainApp {
             System.out.println("Cinsiyet: " + person.getCinsiyet());
             System.out.println("Medeni Durum: " + person.getMedeniDurum());
             System.out.println("Doğum Tarihi: " + person.getDogumTarihi());
+            
+            
+            // Product sınıfı için çıktı
+        	/*
+            System.out.println("\n--- GÜNCEL PRODUCT NESNESİ DEĞERLERİ ---");
+            System.out.println("Adı: " + product.getName());
+            System.out.println("Fiyat: " + product.getPrice());
+            System.out.println("İndirimli Mi?: " + product.isDiscounted());
+            System.out.println("Durum: " + product.getProductStatus());
+            System.out.println("Miktar: " + product.getQuantity());
+            */
+            
         });
         
         frame.add(scrollPane, BorderLayout.CENTER);

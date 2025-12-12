@@ -1,104 +1,101 @@
 package model;
 
-import java.lang.reflect.Field;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.JOptionPane;
+import java.lang.reflect.Field;
 
 public class ObjectPropertyTableModel extends AbstractTableModel {
-    
-    private final Object targetObject;
-    private final Field[] fields; 
-    private final String[] columnNames = {"Özellik Adı", "Değer"}; 
 
-    public ObjectPropertyTableModel(Object object) {
-        this.targetObject = object;
-        this.fields = targetObject.getClass().getDeclaredFields(); 
+    private final Object targetObject;
+    private final Field[] fields;
+
+    public ObjectPropertyTableModel(Object targetObject) {
+        this.targetObject = targetObject;
+        this.fields = targetObject.getClass().getDeclaredFields();
+
+        for (Field f : fields) f.setAccessible(true);
     }
 
     @Override
     public int getRowCount() {
-        return fields.length; 
+        return fields.length;
     }
 
     @Override
     public int getColumnCount() {
-        return columnNames.length; 
+        return 2; // Özellik - Değer
     }
 
     @Override
-    public String getColumnName(int columnIndex) {
-        return columnNames[columnIndex];
+    public String getColumnName(int column) {
+        return column == 0 ? "Özellik" : "Değer";
+    }
+
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        Field f = fields[rowIndex];
+
+        try {
+            if (columnIndex == 0)
+                return f.getName();
+
+            return f.get(targetObject);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
     
-    /**
-      Reflection ile alanın gerçek tipini döndürürüz.
-     */
+    //   getColumnClass metodunu satır bazlı alan tipini döndürecek şekilde güncelliyoruz Eski kodumda farklıydı .
     @Override
-    public Class<?> getColumnClass(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < fields.length) {
-             
-            return fields[rowIndex].getType();
+    public Class<?> getColumnClass(int columnIndex) {
+        // İlk sütun (Özellik Adı) String'dir
+        if (columnIndex == 0) {
+            return String.class;
         }
-        if (rowIndex == 0) return String.class;
+        
+       
+        // getCellEditor metodu ObjectPropertyTable'da override edildiği için çalışacaktır.
         return Object.class;
     }
 
+
     @Override
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex == 1; // Sadece Değer sütunu düzenlenebilir
+    public boolean isCellEditable(int row, int col) {
+        return col == 1;
     }
-    
+
     @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
+    public void setValueAt(Object value, int rowIndex, int columnIndex) {
         Field field = fields[rowIndex];
-        
-        if (columnIndex == 0) {
-            return field.getName(); 
-        }
+        Class<?> type = field.getType();
 
         try {
-            field.setAccessible(true); 
-            return field.get(targetObject); 
-        } catch (IllegalAccessException e) {
-            return "Hata: Erişim Yok";
-        }
-    }
-    
-    @Override
-    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        if (columnIndex != 1) return;
-        
-        Field field = fields[rowIndex];
-        try {
-            field.setAccessible(true);
-            
-            Class<?> targetType = field.getType();
-            Object finalValue = aValue;
-            
-            
-            
-            // 1. INT TİP DÖNÜŞÜMÜ
-            if (targetType == int.class || targetType == Integer.class) {
-                finalValue = Integer.parseInt(aValue.toString());
-            } 
-            
-            
-            else if (targetType.isEnum() && aValue instanceof String) {
-                finalValue = Enum.valueOf((Class<Enum>) targetType, aValue.toString());
+
+            if (type == boolean.class || type == Boolean.class) {
+                // Checkbox'tan gelen değer zaten Boolean'dır
+                field.set(targetObject, (Boolean) value);
             }
-            
-            
-            else if ((targetType == boolean.class || targetType == Boolean.class) && aValue instanceof String) {
-                 finalValue = Boolean.parseBoolean(aValue.toString());
+            else if (type.isEnum()) {
+                // Combobox'tan gelen değer Enum sabitinin kendisidir, yani direkt olarak field'a atlatır!!!.
+                // value.toString() ve Enum.valueOf'a gerek yokmuş****.
+                field.set(targetObject, value);
             }
-            
-         
-            field.set(targetObject, finalValue); 
-            fireTableCellUpdated(rowIndex, columnIndex); 
+            else if (type == int.class || type == Integer.class) {
+                field.set(targetObject, Integer.parseInt(value.toString()));
+            }
+            else if (type == double.class || type == Double.class) {
+                field.set(targetObject, Double.parseDouble(value.toString()));
+            }
+            else {
+                // String veya diğer tipler
+                field.set(targetObject, value);
+            }
+
+            fireTableCellUpdated(rowIndex, columnIndex);
+
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Hata: Geçersiz format veya tip uyuşmazlığı!\n" + e.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
-            
-            fireTableCellUpdated(rowIndex, columnIndex); 
+            e.printStackTrace();
         }
     }
 }
