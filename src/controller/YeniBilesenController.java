@@ -1,56 +1,43 @@
 package controller;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.lang.reflect.Field;
-
-import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
-import view.ObjectPropertyTable;
+import view.YeniBilesenPanel;
 
 public class YeniBilesenController {
 
-	private Object model; // controllerın yönettiği veri
-	private JFrame frame; // controllerın kendi penceresi
-	private JPanel panel; // frame içine koyulan ana panel
+	private Object model;
+	private JFrame frame;
 
 	public YeniBilesenController(Object model) {
-		this.model = model; // hangi obje ile çalışacağı belli olur
+		this.model = model;
 	}
 
-	// dışardan çağırılan tek public metot
 	public void display() {
+// UI göstermek için Frame ilk kez açılıyorsa:
+
+//UI oluştur
+
+//Daha önce oluşturulduysa:
+
+//Aynı frame’i tekrar kullan
 		if (frame == null) {
 			initUI();
 		}
+		// görünür yapar
 		frame.setVisible(true);
 	}
 
-// Arayüz kurulumları burada yapıyorum 
 	private void initUI() {
-
-		// Frame
 		frame = new JFrame(model.getClass().getSimpleName() + " Özellik Editörü");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-		// Panel o9luşturma
-		panel = new JPanel(new BorderLayout());
+		YeniBilesenPanel panel = new YeniBilesenPanel(model);
 
-		ObjectPropertyTable table = new ObjectPropertyTable(model);
-		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setPreferredSize(new Dimension(400, 250));// boyut ayarla ,kaydırılabilir
-
-		JButton printButton = new JButton("Nesneyi Konsola Yazdır");
-		printButton.addActionListener(e -> printObject());
-
-		panel.add(scrollPane, BorderLayout.CENTER);
-		panel.add(printButton, BorderLayout.SOUTH);
-
-		frame.add(panel);
-		frame.pack(); // içeriğe göre boyut
+		// EVENT BAĞLAMA
+		panel.addPrintListener(this::printObject);// paneldeki butona basılınca controllerdeki printobject çalışsın
+		frame.setContentPane(panel);// frame içeriği panel
+		frame.pack();// boutlandırma
 		frame.setLocationByPlatform(true);
 	}
 
@@ -58,8 +45,7 @@ public class YeniBilesenController {
 		System.out.println("\n--- " + model.getClass().getSimpleName() + " ---");
 
 		try {
-			// reflection kullanımı private olsa bile okur
-			for (Field field : model.getClass().getDeclaredFields()) {
+			for (var field : model.getClass().getDeclaredFields()) {
 				field.setAccessible(true);
 				System.out.println(field.getName() + " = " + field.get(model));
 			}

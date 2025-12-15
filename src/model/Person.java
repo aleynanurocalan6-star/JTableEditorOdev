@@ -1,86 +1,85 @@
 package model;
 
-
 enum Gender {
-    Kadın, Erkek
+	Kadın, Erkek
 }
 
-
- enum MaritalStatus {
-    Evli,Bekar
+enum MaritalStatus {
+	Evli, Bekar
 }
 
 public class Person {
-    
 
-    private String isim = "Aleyna Nur";
-    private String soyad = "Öcalan";
-    private int yas = 22;
-    private Gender cinsiyet = Gender.Kadın;
-    private MaritalStatus medeniDurum = MaritalStatus.Evli;
-    private boolean calisiyorMu = true; // Boolean alan (Checkbox)
-    private String dogumTarihi = "26.06.2003"; 
+	private String isim = "Aleyna Nur";
+	private String soyad = "Öcalan";
+	private int yas = 22;
+	private Gender cinsiyet = Gender.Kadın;
+	private MaritalStatus medeniDurum = MaritalStatus.Bekar;
+	private boolean calisiyorMu = true; // Boolean alan (Checkbox)
+	private String dogumTarihi = "26.06.2003";
 
-    // Constructor)
-    public Person() {}
+	// Constructor)
+	public Person() {
+	}
 
-    // --- Getter Metotları 
+	// --- Getter Metotları
 
-    public String getIsim() {
-        return isim;
-    }
+	public String getIsim() {
+		return isim;
+	}
 
-    public String getSoyad() {
-        return soyad;
-    }
+	public String getSoyad() {
+		return soyad;
+	}
 
-    public int getYas() {
-        return yas;
-    }
+	public int getYas() {
+		return yas;
+	}
 
-    public Gender getCinsiyet() {
-        return cinsiyet;
-    }
+	public Gender getCinsiyet() {
+		return cinsiyet;
+	}
 
-    public MaritalStatus getMedeniDurum() {
-        return medeniDurum;
-    }
+	public MaritalStatus getMedeniDurum() {
+		return medeniDurum;
+	}
 
-    public boolean isCalisiyorMu() {
-        return calisiyorMu;
-    }
-    
-    public String getDogumTarihi() {
-        return dogumTarihi;
-    }
+	public boolean isCalisiyorMu() {
+		return calisiyorMu;
+	}
 
-    // --- Setter Metotları (Veri yazma - JTable'dan direkt kullanılmaz ama Reflection ile dolaylı kullanılır) ---
+	public String getDogumTarihi() {
+		return dogumTarihi;
+	}
 
-    public void setIsim(String isim) {
-        this.isim = isim;
-    }
+	// --- Setter Metotları (Veri yazma - JTable'dan direkt kullanılmaz ama
+	// Reflection ile dolaylı kullanılır) ---
 
-    public void setSoyad(String soyad) {
-        this.soyad = soyad;
-    }
+	public void setIsim(String isim) {
+		this.isim = isim;
+	}
 
-    public void setYas(int yas) {
-        this.yas = yas;
-    }
+	public void setSoyad(String soyad) {
+		this.soyad = soyad;
+	}
 
-    public void setCinsiyet(Gender cinsiyet) {
-        this.cinsiyet = cinsiyet;
-    }
+	public void setYas(int yas) {
+		this.yas = yas;
+	}
 
-    public void setMedeniDurum(MaritalStatus medeniDurum) {
-        this.medeniDurum = medeniDurum;
-    }
+	public void setCinsiyet(Gender cinsiyet) {
+		this.cinsiyet = cinsiyet;
+	}
 
-    public void setCalisiyorMu(boolean calisiyorMu) {
-        this.calisiyorMu = calisiyorMu;
-    }
+	public void setMedeniDurum(MaritalStatus medeniDurum) {
+		this.medeniDurum = medeniDurum;
+	}
 
-    public void setDogumTarihi(String dogumTarihi) {
-        this.dogumTarihi = dogumTarihi;
-    }
+	public void setCalisiyorMu(boolean calisiyorMu) {
+		this.calisiyorMu = calisiyorMu;
+	}
+
+	public void setDogumTarihi(String dogumTarihi) {
+		this.dogumTarihi = dogumTarihi;
+	}
 }
