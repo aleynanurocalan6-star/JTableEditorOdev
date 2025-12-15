@@ -1,4 +1,4 @@
-package model;
+package view;
 
 import java.awt.Component;
 import java.lang.reflect.Field;
@@ -11,6 +11,8 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
+
+import model.ObjectPropertyTableModel;
 
 public class ObjectPropertyTable extends JTable {
 
