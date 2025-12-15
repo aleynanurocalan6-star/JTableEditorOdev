@@ -1,47 +1,57 @@
 package controller;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
-import view.YeniBilesenPanel;
+import model.ModelValidator;
+import view.ObjectPropertyTable;
 
 public class YeniBilesenController {
 
 	private Object model;
 	private JFrame frame;
+	private YeniBilesenPanel view;
 
 	public YeniBilesenController(Object model) {
-		this.model = model;
+		this.model = model; // hangi model
+		initView(); // viewi hazırlar
+	}
+
+	private void initView() {
+
+		ObjectPropertyTable objectTable = new ObjectPropertyTable(model);
+		view = new YeniBilesenPanel(objectTable); // view modeli bilmiyor
+
+		view.getBtnPrint().addActionListener(e -> {
+
+			// VALIDATION KONTROLÜ
+			if (!ModelValidator.isValid(model)) {
+				JOptionPane.showMessageDialog(frame, "Modelde hatalı veya eksik alanlar var!", "Validation Hatası",
+						JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+
+			// MODEL GEÇERLİYSE
+			printObject();
+		});
 	}
 
 	public void display() {
-// UI göstermek için Frame ilk kez açılıyorsa:
 
-//UI oluştur
-
-//Daha önce oluşturulduysa:
-
-//Aynı frame’i tekrar kullan
 		if (frame == null) {
-			initUI();
+			frame = new JFrame(model.getClass().getSimpleName() + " Özellik Editörü");
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+			frame.setContentPane(view);
+			frame.pack();
+			frame.setLocationByPlatform(true);
 		}
-		// görünür yapar
+
 		frame.setVisible(true);
 	}
 
-	private void initUI() {
-		frame = new JFrame(model.getClass().getSimpleName() + " Özellik Editörü");
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-		YeniBilesenPanel panel = new YeniBilesenPanel(model);
-
-		// EVENT BAĞLAMA
-		panel.addPrintListener(this::printObject);// paneldeki butona basılınca controllerdeki printobject çalışsın
-		frame.setContentPane(panel);// frame içeriği panel
-		frame.pack();// boutlandırma
-		frame.setLocationByPlatform(true);
-	}
-
 	private void printObject() {
+
 		System.out.println("\n--- " + model.getClass().getSimpleName() + " ---");
 
 		try {
@@ -54,3 +64,4 @@ public class YeniBilesenController {
 		}
 	}
 }
+//Controller kullanıcı aksiyonlarını yönetir, modelin doğruluğunu kontrol eder ve sonucu view üzerinden kullanıcıya yansıtır.

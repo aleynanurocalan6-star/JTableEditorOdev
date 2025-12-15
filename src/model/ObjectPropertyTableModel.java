@@ -2,6 +2,7 @@ package model;
 
 import java.lang.reflect.Field;
 
+import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 
 public class ObjectPropertyTableModel extends AbstractTableModel {
@@ -69,32 +70,62 @@ public class ObjectPropertyTableModel extends AbstractTableModel {
 
 	@Override
 	public void setValueAt(Object value, int rowIndex, int columnIndex) {
-		Field field = fields[rowIndex];// ilgili alan
-		Class<?> type = field.getType();// tip öğrenme
+
+		Field field = fields[rowIndex];
+		Class<?> type = field.getType();
+
+		Object oldValue;
+		try {
+			field.setAccessible(true);
+			oldValue = field.get(targetObject);
+		} catch (Exception ex) {
+			return;
+		}
 
 		try {
 
 			if (type == boolean.class || type == Boolean.class) {
-				// Checkbox'tan gelen değer zaten Boolean'dır
 				field.set(targetObject, (Boolean) value);
+
 			} else if (type.isEnum()) {
-				// Combobox'tan gelen değer Enum sabitinin kendisidir, yani direkt olarak
-				// field'a atlatır!!!.
-				// value.toString() ve Enum.valueOf'a gerek yokmuş****.
 				field.set(targetObject, value);
+
 			} else if (type == int.class || type == Integer.class) {
-				field.set(targetObject, Integer.parseInt(value.toString()));
+
+				int val = Integer.parseInt(value.toString());
+				if (val < 0)
+					throw new IllegalArgumentException("Negatif olamaz");
+
+				field.set(targetObject, val);
+
 			} else if (type == double.class || type == Double.class) {
-				field.set(targetObject, Double.parseDouble(value.toString()));
+
+				double val = Double.parseDouble(value.toString());
+				if (val < 0)
+					throw new IllegalArgumentException("Negatif olamaz");
+
+				field.set(targetObject, val);
+
 			} else {
-				// String veya diğer tipler
+				if (value == null || value.toString().trim().isEmpty())
+					throw new IllegalArgumentException("Boş olamaz");
+
 				field.set(targetObject, value);
 			}
 
 			fireTableCellUpdated(rowIndex, columnIndex);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+
+			// HATA → eski değeri geri koy
+			try {
+				field.set(targetObject, oldValue);
+			} catch (Exception ignore) {
+			}
+
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Geçersiz Giriş", JOptionPane.ERROR_MESSAGE);
+
+			fireTableCellUpdated(rowIndex, columnIndex);
 		}
 	}
 }
