@@ -1,103 +1,105 @@
 package model;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
-import java.awt.*;
+import java.awt.Component;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JCheckBox;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+
 public class ObjectPropertyTable extends JTable {
 
-    // Her satır/alan için özel düzenleyicileri tutacak bir Map
-    private final Map<Integer, TableCellEditor> customEditors = new HashMap<>();
-    private final Field[] fields;
+	private final Map<Integer, TableCellEditor> customEditors = new HashMap<>();
+	private final Field[] fields;
 
-    public ObjectPropertyTable(Object targetObject) {
+	public ObjectPropertyTable(Object targetObject) {
 
-        ObjectPropertyTableModel model = new ObjectPropertyTableModel(targetObject);
-        this.setModel(model);
-        
-        // Reflection ile alanları alıyoruz
-        this.fields = targetObject.getClass().getDeclaredFields();
+		ObjectPropertyTableModel model = new ObjectPropertyTableModel(targetObject);
+		this.setModel(model);
 
-        setupRowSpecificEditors(targetObject); // Özel düzenleyicileri hazırlıyoruz
-        setupRenderers();
+		this.fields = targetObject.getClass().getDeclaredFields();
 
-        this.setRowHeight(25);
-        // Özellik adını gösteren ilk sütunun genişliğini ayarla
-        this.getColumnModel().getColumn(0).setPreferredWidth(150); 
-    }
+		setupRowSpecificEditors();
+		setupRenderers();
 
-    // Bu metod, her bir satır (alan) için uygun düzenleyiciyi hazırlar
-    private void setupRowSpecificEditors(Object targetObject) {
+		this.setRowHeight(25);
+		this.getColumnModel().getColumn(0).setPreferredWidth(150);
+	}
 
-        for (int row = 0; row < fields.length; row++) {
+	private void setupRowSpecificEditors() {
 
-            Field f = fields[row];
-            f.setAccessible(true);
-            Class<?> type = f.getType();
+		for (int row = 0; row < fields.length; row++) {
 
-            // BOOLEAN → CHECKBOX
-            if (type == boolean.class || type == Boolean.class) {
-                JCheckBox checkBox = new JCheckBox();
-                // Checkbox için DefaultCellEditor kullanıyoruz
-                customEditors.put(row, new DefaultCellEditor(checkBox));
-            }
+			Field f = fields[row];
+			f.setAccessible(true);
+			Class<?> type = f.getType();
 
-            // ENUM → COMBOBOX (Özel EnumCellEditor'ü kullanıyoruz)
-            else if (type.isEnum()) {
-                // Özel EnumCellEditor'ü, enum sabitleriyle oluşturuyoruz
-                customEditors.put(row, new EnumCellEditor(type.getEnumConstants()));
-            }
-            // Diğer tipler (String, int, double vb.) için varsayılan TextEditor kullanılacak.
-        }
-    }
+			if (type == boolean.class || type == Boolean.class) {
+				JCheckBox checkBox = new JCheckBox();
+				checkBox.setHorizontalAlignment(SwingConstants.LEFT);
+				customEditors.put(row, new DefaultCellEditor(checkBox));
+			} else if (type.isEnum()) {
+				customEditors.put(row, new EnumCellEditor(type.getEnumConstants()));
+			}
+		}
+	}
 
-    /**
-     * Satır ve sütun bazında düzenleyiciyi döndürür.
-     */
-    @Override
-    public TableCellEditor getCellEditor(int row, int column) {
-        // Yalnızca Değer sütunu (index 1) için özel editörleri kontrol et
-        if (column == 1 && customEditors.containsKey(row)) {
-            // Eğer o satır için özel bir düzenleyici varsa (Boolean, Enum) onu döndür
-            return customEditors.get(row);
-        }
+	@Override
+	public TableCellEditor getCellEditor(int row, int column) {
 
-        // Değer sütunu değilse (index 0) veya özel düzenleyici atanmamışsa varsayılanı kullan
-        return super.getCellEditor(row, column);
-    }
-    
-    // Boolean değerlerin tabloda "true"/"false" metinleri olarak görünmesini sağlayan Renderers yeni ekledimm
-    private void setupRenderers() {
+		if (column == 1 && customEditors.containsKey(row)) {
+			return customEditors.get(row);
+		}
 
-        // Boolean değerler için özel renderer
-        DefaultTableCellRenderer booleanRenderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(
-                    JTable table, Object value,
-                    boolean isSelected, boolean hasFocus,
-                    int row, int column) {
+		return super.getCellEditor(row, column);
+	}
 
-                // Varsayılan render component'i al
-                JLabel lbl = (JLabel) super.getTableCellRendererComponent(
-                        table, value, isSelected, hasFocus, row, column);
+	// RENDERER SADECE BURADA
+	private void setupRenderers() {
 
-                // Eğer değer Boolean ise metnini ayarla
-                if (value instanceof Boolean) {
-                    // Boolean değerini "true" veya "false" metnine dönüştür
-                    lbl.setText((Boolean) value ? "true" : "false");
-                    lbl.setHorizontalAlignment(SwingConstants.CENTER); 
-                }
+		DefaultTableCellRenderer booleanRenderer = new DefaultTableCellRenderer() {
 
-                return lbl;
-            }
-        };
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+					boolean hasFocus, int row, int column) {
 
-        // Tablonun Boolean tipli hücrelerini bu render ile göster burda hallettim
-        this.setDefaultRenderer(Boolean.class, booleanRenderer);
-        this.setDefaultRenderer(boolean.class, booleanRenderer);
-    }
+				if (!(value instanceof Boolean)) {
+					// Eğer bu hücrenin değeri Boolean DEĞİLSE
+					// hiç karışmaz , JTable nasıl çiziyorsa öyle çiz
+					return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				}
+
+				JCheckBox chk = new JCheckBox();
+				// Boolean hücre için gösterilecek bileşen
+				chk.setHorizontalAlignment(SwingConstants.LEFT);// sola hizala
+
+				chk.setFocusPainted(false);// focus çerçevesi çizmez
+				chk.setBorderPainted(false);// Border çizilmez
+				chk.setOpaque(true);// arka plan
+
+				boolean selected = (Boolean) value;
+				// değer checkboxa atanıyor
+
+				chk.setSelected(selected);
+
+				if (isSelected) {
+
+					chk.setBackground(table.getSelectionBackground());
+				} else {
+					chk.setBackground(table.getBackground());
+				}
+				return chk;
+				// JTable bu hücreyi checkbox olarak çizer
+			}
+		};
+
+		// SADECE DEĞER SÜTUNU
+		// Renderer sadece “Değer” sütununa atanıyor
+		this.getColumnModel().getColumn(1).setCellRenderer(booleanRenderer);
+	}
 }
